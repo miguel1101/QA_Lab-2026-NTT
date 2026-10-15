@@ -5,8 +5,6 @@ import com.nttdata.screens.SauceLabsLoginScreen;
 /**
  * Caso de uso de login en la app movil de Sauce Labs.
  * Delega toda la interaccion de UI en {@link SauceLabsLoginScreen}.
- * No sabe nada de como se levanta o se cierra la app: eso lo maneja
- * {@link AppConfigSteps} / {@code AppConfigScreen}.
  */
 public class SauceLabsLoginSteps {
 
@@ -30,5 +28,22 @@ public class SauceLabsLoginSteps {
     public boolean loginFueExitoso() {
         System.out.println("[SauceLabsLoginSteps] loginFueExitoso: validando resultado...");
         return screen.estaEnPantallaDeProductos();
+    }
+
+    public boolean validarGaleriaProductos() {
+        System.out.println("[SauceLabsLoginSteps] validarGaleriaProductos: verificando carga de la galeria...");
+        return screen.validarGaleriaCargada();
+    }
+
+    public void agregarProductoAlCarrito(String producto, int unidades) {
+        System.out.println("[SauceLabsLoginSteps] agregarProductoAlCarrito -> Producto: " + producto + ", Unidades: " + unidades);
+        for (int i = 0; i < unidades; i++) {
+            screen.seleccionarYAgregarProducto(producto);
+        }
+    }
+
+    public boolean validarCarritoActualizado() {
+        System.out.println("[SauceLabsLoginSteps] validarCarritoActualizado: verificando contador/carrito...");
+        return screen.verificarCarritoConProductos();
     }
 }

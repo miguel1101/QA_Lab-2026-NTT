@@ -11,76 +11,96 @@ import java.time.Duration;
 
 import static com.nttdata.screens.AppConfigScreen.getDriver;
 
-/**
- * SauceLabsLoginScreen
- * ---------------------
- * Pantalla de login de la app movil de Sauce Labs.
- * <p>
- * Su UNICA responsabilidad es interactuar con los elementos de esta
- * pantalla (escribir usuario/clave, hacer clic en LOGIN, verificar que
- * el login fue exitoso).
- * <p>
- * NO levanta ni cierra la aplicacion: eso es responsabilidad exclusiva
- * de {@link AppConfigScreen}. Esta clase solo pide el driver de la
- * sesion ya activa mediante {@code AppConfigScreen.getDriver()}.
- */
 public class SauceLabsLoginScreen {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(20);
 
-    private final By txtUsuario =
-            AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Username\"]");
-
-    private final By txtClave =
-            AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Password\"]");
-
-    private final By btnLogin =
-            AppiumBy.accessibilityId("test-LOGIN");
-
-    // Elemento que solo existe en la pantalla de productos, tras un login exitoso
-    private final By tituloProductos =
-            AppiumBy.accessibilityId("test-PRODUCTS");
+    private final By txtUsuario = AppiumBy.accessibilityId("test-Username");
+    private final By txtClave = AppiumBy.xpath("//android.widget.EditText[@content-desc=\"test-Password\"]");
+    private final By btnLogin = AppiumBy.accessibilityId("test-LOGIN");
+    private final By tituloProductos = AppiumBy.accessibilityId("test-PRODUCTS");
 
     public void escribirUsuario(String usuario) {
         System.out.println("[SauceLabsLoginScreen] Escribiendo usuario: " + usuario);
-
         AndroidDriver driver = getDriver();
         WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
 
-        WebElement campoUsuario = wait.until(ExpectedConditions.presenceOfElementLocated(txtUsuario));
+        // Espera explícita mejorada para asegurar visibilidad antes de interactuar
+        WebElement campoUsuario = wait.until(ExpectedConditions.visibilityOfElementLocated(txtUsuario));
+        campoUsuario.clear(); // Limpia el campo por si acaso
         campoUsuario.sendKeys(usuario);
     }
 
     public void escribirClave(String clave) {
         System.out.println("[SauceLabsLoginScreen] Escribiendo clave...");
-
         AndroidDriver driver = getDriver();
         WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
 
-        WebElement campoClave = wait.until(ExpectedConditions.presenceOfElementLocated(txtClave));
+        // Espera explícita para asegurar que el campo password sea visible
+        WebElement campoClave = wait.until(ExpectedConditions.visibilityOfElementLocated(txtClave));
+        campoClave.clear();
         campoClave.sendKeys(clave);
     }
 
     public void clicEnLogin() {
         System.out.println("[SauceLabsLoginScreen] Haciendo clic en el boton LOGIN");
-
         AndroidDriver driver = getDriver();
         WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
 
-        WebElement botonLogin = wait.until(ExpectedConditions.presenceOfElementLocated(btnLogin));
+        // Espera explícita para asegurar que el botón sea clickeable
+        WebElement botonLogin = wait.until(ExpectedConditions.elementToBeClickable(btnLogin));
         botonLogin.click();
     }
-
     public boolean estaEnPantallaDeProductos() {
         System.out.println("[SauceLabsLoginScreen] Validando que se llego a la pantalla de productos...");
+        AndroidDriver driver = getDriver();
+        WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
+        WebElement titulo = wait.until(ExpectedConditions.presenceOfElementLocated(tituloProductos));
+        boolean visible = titulo.isDisplayed();
+        System.out.println("[SauceLabsLoginScreen] Pantalla de productos visible: " + visible);
+        return visible;
+    }
 
+    public boolean validarGaleriaCargada() {
+        System.out.println("[SauceLabsLoginScreen] Validando que cargue la galería de productos...");
+        AndroidDriver driver = getDriver();
+        WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
+        WebElement titulo = wait.until(ExpectedConditions.visibilityOfElementLocated(tituloProductos));
+        return titulo.isDisplayed();
+    }
+
+    public void seleccionarYAgregarProducto(String nombreProducto) {
+        System.out.println("[SauceLabsLoginScreen] Buscando y agregando: " + nombreProducto);
         AndroidDriver driver = getDriver();
         WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
 
-        WebElement titulo = wait.until(ExpectedConditions.presenceOfElementLocated(tituloProductos));
-        boolean visible = titulo.isDisplayed();
+        try {
+            String scrollCommand = "new UiScrollable(new UiSelector().className(\"android.widget.ScrollView\").instance(0))" +
+                    ".scrollIntoView(new UiSelector().text(\"" + nombreProducto + "\"));";
+            driver.findElement(AppiumBy.androidUIAutomator(scrollCommand));
+        } catch (Exception e) {
+            System.out.println("[SauceLabsLoginScreen] El scroll ya no era necesario.");
+        }
 
-        System.out.println("[SauceLabsLoginScreen] Pantalla de productos visible: " + visible);
-        return visible;
+        String xpathBtnAgregar = "//*[@text='" + nombreProducto + "']/../following-sibling::*//android.view.ViewGroup[@content-desc='test-ADD TO CART']";
+        WebElement btnAgregar = null;
+        try {
+            btnAgregar = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpathBtnAgregar)));
+        } catch (Exception e) {
+            System.out.println("[SauceLabsLoginScreen] Usando selector alternativo UiAutomator para el botón...");
+            String uiAutomatorClick = "new UiSelector().text(\"ADD TO CART\")";
+            btnAgregar = driver.findElement(AppiumBy.androidUIAutomator(uiAutomatorClick));
+        }
+
+        btnAgregar.click();
+    }
+
+    public boolean verificarCarritoConProductos() {
+        System.out.println("[SauceLabsLoginScreen] Verificando que el carrito se actualizó...");
+        AndroidDriver driver = getDriver();
+        WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
+        By badgeCarrito = AppiumBy.xpath("//android.view.ViewGroup[@content-desc=\"test-Cart\"]//android.widget.TextView");
+        WebElement carritoBadge = wait.until(ExpectedConditions.visibilityOfElementLocated(badgeCarrito));
+        return carritoBadge.isDisplayed();
     }
 }

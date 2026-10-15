@@ -1,5 +1,4 @@
 package com.nttdata.screens;
-
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import org.openqa.selenium.OutputType;
@@ -171,5 +170,13 @@ public class AppConfigScreen {
     private String obtenerObligatorio(Properties properties, String key) {
         String value = properties.getProperty(key);
         return Objects.requireNonNull(value, "[AppConfigScreen] Falta la propiedad obligatoria '" + key + "'");
+    }
+
+    public static void cerrarDriver() {
+        if (driver != null) {
+            System.out.println("[AppConfigScreen] Cerrando sesión de Appium...");
+            driver.quit();
+            driver = null; // Limpiamos la instancia para que en el siguiente escenario se cree una nueva
+        }
     }
 }

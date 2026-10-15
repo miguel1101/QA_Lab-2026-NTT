@@ -125,7 +125,7 @@ Esto ayuda a diagnosticar rápido en qué paso falló algo, sin depender
 
 ## 4. Feature disponible
 
-### `SauceLabs.feature` (`@SauceLabsLogin`, `@Smoke`)
+### `01.Login.feature` (`@SauceLabsLogin`, `@Smoke`)
 Login completo en la app de Sauce Labs (`standard_user` / `secret_sauce`),
 validación de que se llegó a la pantalla de productos, y cierre de la
 app — usando el step genérico de `AppConfigStepsDefs` para levantarla y

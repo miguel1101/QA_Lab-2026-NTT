@@ -38,8 +38,8 @@ public class AppConfigStepsDefs {
         appConfigSteps.iniciarAplicacion(nombreConfiguracion + ".properties");
         ScreenshotAttacher.attach(scenario, "Pantalla inicial");
     }
-
     @Then("cierro el aplicativo {string}")
+
     public void cierro_el_aplicativo(String appId) {
         System.out.println("[AppConfigStepsDefs] Cerrando aplicativo: " + appId);
         appConfigSteps.cerrarAplicacion(appId);
